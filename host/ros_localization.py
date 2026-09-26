@@ -37,7 +37,7 @@ def prepare_reference_map(source,target,current_scale):
     with sqlite3.connect(source.as_uri()+'?mode=ro',uri=True) as old:
         if old.execute('PRAGMA quick_check').fetchone()[0]!='ok':raise ValueError('Kayitli veritabani bozuk')
         count=old.execute('SELECT count(*) FROM Node WHERE id>0 AND weight>=0').fetchone()[0]
-        reference_ids=[row[0] for row in old.execute('SELECT id FROM Node WHERE id>0 ORDER BY id')]
+        reference_ids=[row[0] for row in old.execute('SELECT id FROM Node WHERE id>0 AND weight>=0 ORDER BY id')]
         if count<2:raise ValueError('Kayitli haritada yeterli etkin poz yok')
         target.parent.mkdir(parents=True,exist_ok=False)
         with sqlite3.connect(target) as new:old.backup(new)

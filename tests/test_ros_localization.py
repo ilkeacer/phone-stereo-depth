@@ -22,7 +22,7 @@ class LocalizationMapTests(unittest.TestCase):
             source.parent.mkdir(parents=True)
             with sqlite3.connect(source) as db:
                 db.execute('CREATE TABLE Node (id INTEGER, weight INTEGER)')
-                db.executemany('INSERT INTO Node VALUES (?,0)',[(1,),(2,)])
+                db.executemany('INSERT INTO Node VALUES (?,?)',[(1,0),(2,0),(3,-9)])
             session=source.parent.parent
             (session/'summary.json').write_text(json.dumps(dict(mapState='connected')))
             (session/'export-result.json').write_text(json.dumps(dict(status='complete')))
@@ -36,6 +36,8 @@ class LocalizationMapTests(unittest.TestCase):
             self.assertEqual(sha256(source),before)
             self.assertEqual(evidence['referenceActiveNodes'],2)
             self.assertEqual(evidence['referenceNodeIds'],[1,2])
+            self.assertEqual(accepted_reference_ids(SimpleNamespace(loop_closure_id=3,proximity_detection_id=0),
+                                                    set(evidence['referenceNodeIds'])),[])
             self.assertEqual(evidence['workingCopySha256'],sha256(target))
             with self.assertRaises(FileExistsError):prepare_reference_map(source,target,scale)
 
