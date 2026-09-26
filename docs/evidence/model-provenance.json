@@ -1,0 +1,11 @@
+{
+  "model": "RAFT-Stereo Middlebury",
+  "repository": "https://github.com/princeton-vl/RAFT-Stereo",
+  "commit": "6e93ed2169bd858dbb43033988563f3b0bb49506",
+  "weightsSource": "Official repository download_models.sh Dropbox archive",
+  "checkpointSha256": "d22e84c0e431bf31d7cc66902c40601859eb40b35ef7f4399ea81276c2915819",
+  "codeLicense": "MIT",
+  "weightsLicense": "No separate explicit license found on linked checkpoint; not redistributed in Git",
+  "runtime": "PyTorch2.10.0+cu128 Python3.10",
+  "accuracyEvaluation": "Recorded phone-pair inference and left/right consistency tested; dense ground-truth accuracy and metric scale unverified"
+}

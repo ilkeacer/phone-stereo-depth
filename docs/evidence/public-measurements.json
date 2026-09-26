@@ -1,0 +1,67 @@
+{
+  "evidenceAvailability": "Author reports real-device tests; private photos, scene arrays and raw logs are intentionally not distributed. Synthetic unit tests are included.",
+  "cameraPair": [
+    "20",
+    "21"
+  ],
+  "physicalLensTest": "Timed user-performed selective occlusion; upper rear telephoto and lower rear ultrawide",
+  "continuousCapture": {
+    "size": [
+      640,
+      480
+    ],
+    "overlapSeconds": 65.0642,
+    "frameCounts": [
+      980,
+      983
+    ],
+    "uniquePairsWithin20ms": 670,
+    "medianPairSeparationMs": 9.31,
+    "gapsOver200ms": 0
+  },
+  "calibration": {
+    "size": [
+      1280,
+      960
+    ],
+    "trainViews": 27,
+    "heldoutViews": 10,
+    "rmsPx": 0.8728538329175395,
+    "heldoutVerticalErrorPx": {
+      "median": 0.49188995361328125,
+      "p95": 1.4514656066894531,
+      "maximum": 2.490142822265625
+    },
+    "lengthUnit": "checker_square",
+    "metricScaleVerified": false
+  },
+  "recordedSGBM": {
+    "validPixelRatio": 0.19644368489583333,
+    "twoDirectionMatcherMs": 123.81912099954206,
+    "metricScaleVerified": false,
+    "endToEndLatencyMeasured": false
+  },
+  "recordedRAFT": {
+    "iterations": 16,
+    "inputScale": 0.5,
+    "warmForwardMs": 198.698221007362,
+    "reverseForwardMs": 199.6481749956729,
+    "consistencyValidRatio": 0.62820068359375,
+    "peakAllocatedMiB": 698.36962890625,
+    "accuracyEvaluated": false,
+    "metricDepth": false
+  },
+  "liveSGBM": {
+    "totalSeconds": 89.99275553699408,
+    "computedPairs": 210,
+    "averageDepthUpdatesHzIncludingWaits": 2.333521167864157,
+    "maxGapBetweenDepthUpdatesSeconds": 18.16426394500013,
+    "medianMatcherMs": 164.04886849340983,
+    "medianValidPixelRatio": 0.12107259114583334,
+    "metricScaleVerified": false,
+    "endToEndLatencyMeasured": false
+  },
+  "rosSlamImplemented": false,
+  "vehicleControlImplemented": false,
+  "denseGroundTruthAccuracyVerified": false
+}

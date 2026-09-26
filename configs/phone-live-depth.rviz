@@ -1,0 +1,43 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Background Color: 20; 27; 37
+    Fixed Frame: phone_left_optical
+    Frame Rate: 30
+  Displays:
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Anlik kamera derinligi (biriken harita degil)
+      Enabled: true
+      Topic:
+        Value: /phone/local_cloud
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Style: Points
+      Size (Pixels): 4
+      Color Transformer: FlatColor
+      Color: 100; 220; 255
+      Position Transformer: XYZ
+    - Class: rviz_default_plugins/Axes
+      Name: Kamera eksenleri
+      Enabled: true
+      Reference Frame: phone_left_optical
+      Length: 0.25
+      Radius: 0.01
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 2.5
+      Pitch: 0.5
+      Yaw: 0.5
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 1.5
+Window Geometry:
+  Width: 1200
+  Height: 800

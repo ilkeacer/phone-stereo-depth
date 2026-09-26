@@ -1,0 +1,10 @@
+{
+ "pattern": "checkerboard",
+ "innerCorners": [9,6],
+ "printedFrom": "calibration-checkerboard-A4.pdf",
+ "pdfConfirmedByUser": true,
+ "measuredSquareMm": null,
+ "metricScaleVerified": false,
+ "reason": "User printed PDF but has no ruler (2026-09-10). Nominal 25mm MUST NOT be treated as measured.",
+ "allowedMode": "Geometry in checker-square units and pixel disparity only; no metre labels"
+}

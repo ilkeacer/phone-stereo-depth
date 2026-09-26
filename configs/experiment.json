@@ -1,0 +1,14 @@
+{
+ "preferredSize": [640,480],
+ "preferredFpsRange": [15,15],
+ "fallbackSize": "smallest advertised YUV_420_888 size per camera",
+ "pairs": [["0","20"],["0","21"],["20","21"],["100","20"],["100","21"]],
+ "pairPrecondition": "both single-camera tests produce frames",
+ "openBeforeConfigure": true,
+ "openOrders": "both on failure",
+ "singleObservationSeconds": 6,
+ "pairProbeSeconds": 8,
+ "sustainObservationSeconds": 65,
+ "pairingThresholdMs": 20,
+ "notes": "Documents compiled defaults; not dynamically loaded by APK. Physical lens identity requires controlled occlusion."
+}

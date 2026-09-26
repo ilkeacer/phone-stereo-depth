@@ -1,0 +1,343 @@
+{
+  "opencv": "4.5.4",
+  "numpy": "1.21.5",
+  "selectedFrameIndices": [
+    0,
+    24,
+    49,
+    74,
+    75,
+    100,
+    125,
+    150,
+    151,
+    175,
+    200,
+    225
+  ],
+  "selection": "Evenly spaced indices per phase, before seeing matcher results",
+  "samplesPerPhase": 4,
+  "geometry": {
+    "nativeFx": [
+      1969.769491002924,
+      564.6107748093818
+    ],
+    "rectifiedFx": [
+      1102.618237200408,
+      1102.618237200408
+    ],
+    "sourceSize": [
+      1280,
+      960
+    ],
+    "outputSize": [
+      640,
+      480
+    ],
+    "regions": {
+      "full": 307200,
+      "commonSupport": 232534,
+      "central200": 40000
+    },
+    "maps": [
+      {
+        "centralSourceX": [
+          441.28594970703125,
+          806.3360595703125
+        ],
+        "centralSourceY": [
+          287.26226806640625,
+          651.9292602539062
+        ],
+        "medianOutputPixelsPerSourcePixel": 0.5603100061416626
+      },
+      {
+        "centralSourceX": [
+          593.0770874023438,
+          695.9014892578125
+        ],
+        "centralSourceY": [
+          427.9637451171875,
+          530.9064331054688
+        ],
+        "medianOutputPixelsPerSourcePixel": 1.9554482698440552
+      }
+    ]
+  },
+  "summary": [
+    {
+      "variant": "original",
+      "profile": "rtabmap_bm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 7.885416666666666,
+          "lrPercent": 4.480143229166667,
+          "finalPercent": 4.480143229166667
+        },
+        "commonSupport": {
+          "backendPercent": 10.417401326257664,
+          "lrPercent": 5.9187043615127255,
+          "finalPercent": 5.9187043615127255
+        },
+        "central200": {
+          "backendPercent": 11.93,
+          "lrPercent": 7.55875,
+          "finalPercent": 7.55875
+        }
+      }
+    },
+    {
+      "variant": "original",
+      "profile": "controlled_bm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 7.642415364583334,
+          "lrPercent": 4.452311197916667,
+          "finalPercent": 4.452311197916667
+        },
+        "commonSupport": {
+          "backendPercent": 10.096373003517765,
+          "lrPercent": 5.881935544909561,
+          "finalPercent": 5.881935544909561
+        },
+        "central200": {
+          "backendPercent": 11.76,
+          "lrPercent": 7.518750000000001,
+          "finalPercent": 7.518750000000001
+        }
+      }
+    },
+    {
+      "variant": "original",
+      "profile": "controlled_sgbm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 54.14762369791667,
+          "lrPercent": 36.587727864583336,
+          "finalPercent": 35.365234375
+        },
+        "commonSupport": {
+          "backendPercent": 67.79567719129247,
+          "lrPercent": 46.72090963041964,
+          "finalPercent": 46.72090963041964
+        },
+        "central200": {
+          "backendPercent": 71.32375,
+          "lrPercent": 57.692499999999995,
+          "finalPercent": 57.692499999999995
+        }
+      }
+    },
+    {
+      "variant": "original",
+      "profile": "host_sgbm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 38.14811197916667,
+          "lrPercent": 21.177571614583336,
+          "finalPercent": 20.535319010416664
+        },
+        "commonSupport": {
+          "backendPercent": 47.91320839103099,
+          "lrPercent": 27.15301848331857,
+          "finalPercent": 27.12915100587441
+        },
+        "central200": {
+          "backendPercent": 48.685,
+          "lrPercent": 34.9975,
+          "finalPercent": 34.9975
+        }
+      }
+    },
+    {
+      "variant": "teleBlurSigma1",
+      "profile": "rtabmap_bm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 14.5048828125,
+          "lrPercent": 8.928873697916668,
+          "finalPercent": 8.928873697916668
+        },
+        "commonSupport": {
+          "backendPercent": 19.16235905286969,
+          "lrPercent": 11.795909415397318,
+          "finalPercent": 11.795909415397318
+        },
+        "central200": {
+          "backendPercent": 14.747499999999999,
+          "lrPercent": 13.04,
+          "finalPercent": 13.04
+        }
+      }
+    },
+    {
+      "variant": "teleBlurSigma1",
+      "profile": "controlled_bm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 13.652018229166668,
+          "lrPercent": 8.900716145833334,
+          "finalPercent": 8.900716145833334
+        },
+        "commonSupport": {
+          "backendPercent": 18.03564209964994,
+          "lrPercent": 11.75871055415552,
+          "finalPercent": 11.75871055415552
+        },
+        "central200": {
+          "backendPercent": 14.37625,
+          "lrPercent": 12.927499999999998,
+          "finalPercent": 12.927499999999998
+        }
+      }
+    },
+    {
+      "variant": "teleBlurSigma1",
+      "profile": "controlled_sgbm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 57.04443359375,
+          "lrPercent": 36.929850260416664,
+          "finalPercent": 35.5791015625
+        },
+        "commonSupport": {
+          "backendPercent": 71.42417882976252,
+          "lrPercent": 47.242553777082065,
+          "finalPercent": 47.00344895800184
+        },
+        "central200": {
+          "backendPercent": 67.6225,
+          "lrPercent": 56.025,
+          "finalPercent": 56.025
+        }
+      }
+    },
+    {
+      "variant": "teleBlurSigma1",
+      "profile": "host_sgbm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 41.314127604166664,
+          "lrPercent": 23.595865885416668,
+          "finalPercent": 22.746419270833336
+        },
+        "commonSupport": {
+          "backendPercent": 51.668358175578625,
+          "lrPercent": 30.07280655732065,
+          "finalPercent": 30.05022921379239
+        },
+        "central200": {
+          "backendPercent": 48.026250000000005,
+          "lrPercent": 37.301249999999996,
+          "finalPercent": 37.301249999999996
+        }
+      }
+    },
+    {
+      "variant": "claheBoth",
+      "profile": "rtabmap_bm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 6.91455078125,
+          "lrPercent": 3.857096354166667,
+          "finalPercent": 3.857096354166667
+        },
+        "commonSupport": {
+          "backendPercent": 9.13479319153328,
+          "lrPercent": 5.095598923168225,
+          "finalPercent": 5.095598923168225
+        },
+        "central200": {
+          "backendPercent": 10.2775,
+          "lrPercent": 8.23625,
+          "finalPercent": 8.23625
+        }
+      }
+    },
+    {
+      "variant": "claheBoth",
+      "profile": "controlled_bm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 6.81640625,
+          "lrPercent": 3.850260416666667,
+          "finalPercent": 3.850260416666667
+        },
+        "commonSupport": {
+          "backendPercent": 9.005134732985283,
+          "lrPercent": 5.086567985756922,
+          "finalPercent": 5.086567985756922
+        },
+        "central200": {
+          "backendPercent": 10.27125,
+          "lrPercent": 8.23625,
+          "finalPercent": 8.23625
+        }
+      }
+    },
+    {
+      "variant": "claheBoth",
+      "profile": "controlled_sgbm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 43.56266276041667,
+          "lrPercent": 22.217936197916664,
+          "finalPercent": 21.46044921875
+        },
+        "commonSupport": {
+          "backendPercent": 54.88057660385148,
+          "lrPercent": 28.356283382215075,
+          "finalPercent": 28.35133786887079
+        },
+        "central200": {
+          "backendPercent": 50.435,
+          "lrPercent": 34.25875,
+          "finalPercent": 33.847500000000004
+        }
+      }
+    },
+    {
+      "variant": "claheBoth",
+      "profile": "host_sgbm",
+      "frames": 12,
+      "regions": {
+        "full": {
+          "backendPercent": 32.42724609375,
+          "lrPercent": 14.59814453125,
+          "finalPercent": 14.0830078125
+        },
+        "commonSupport": {
+          "backendPercent": 40.902405669708514,
+          "lrPercent": 18.605236223520002,
+          "finalPercent": 18.605021201200685
+        },
+        "central200": {
+          "backendPercent": 36.743750000000006,
+          "lrPercent": 22.5775,
+          "finalPercent": 21.82125
+        }
+      }
+    }
+  ],
+  "inputUnchanged": true,
+  "accuracyMeasured": false,
+  "scope": "Coverage ablations do not identify a unique cause; matched profiles still differ in algorithm-specific controls.",
+  "provenance": {
+    "calibrationSha256": "41edce516f6b79a9f3560be8fdfbe97e6172330614ec1b16d355447bbc0260d3",
+    "calibrationReportSha256": "a138978ad4935856db1461dbb16f2175adcbdd6c68a30777aec17e7587a54ec0",
+    "pairs": 226,
+    "maxStereoDeltaMs": 18.980701,
+    "sourceSpanSeconds": 29.970202176
+  }
+}

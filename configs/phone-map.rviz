@@ -1,0 +1,106 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Background Color: 235; 239; 243
+    Fixed Frame: map
+    Frame Rate: 30
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Zemin
+      Enabled: true
+      Cell Size: 1
+      Plane Cell Count: 20
+      Color: 90; 100; 115
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Canli 3B harita
+      Enabled: true
+      Topic:
+        Value: /rtabmap/cloud_map
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Style: Points
+      Size (Pixels): 3
+      Color Transformer: RGB8
+      Position Transformer: XYZ
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Kayitli 3B harita
+      Enabled: true
+      Topic:
+        Value: /phone/saved_map
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Style: Points
+      Size (Pixels): 3
+      Color Transformer: RGB8
+      Position Transformer: XYZ
+    - Class: rviz_default_plugins/Path
+      Name: Canli kamera yolu
+      Enabled: true
+      Topic:
+        Value: /rtabmap/mapPath
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color: 255; 220; 40
+      Line Style: Lines
+      Line Width: 0.04
+      Pose Style: None
+    - Class: rviz_default_plugins/Axes
+      Name: Telefonun odometri tahmini (eski haritada onaysiz olabilir)
+      Enabled: true
+      Reference Frame: phone_link
+      Length: 0.25
+      Radius: 0.015
+    - Class: rviz_default_plugins/Path
+      Name: Eski harita eslesmesinden sonraki yol
+      Enabled: true
+      Topic:
+        Value: /phone/localization_path
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Color: 220; 50; 220
+      Line Style: Lines
+      Line Width: 0.04
+      Pose Style: None
+    - Class: rviz_default_plugins/Path
+      Name: Kayitli kamera yolu
+      Enabled: true
+      Topic:
+        Value: /phone/saved_path
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Color: 255; 153; 40
+      Line Style: Lines
+      Line Width: 0.02
+      Pose Style: None
+    - Class: rviz_default_plugins/Axes
+      Name: Kayit bitisindeki telefon pozu
+      Enabled: true
+      Reference Frame: saved_phone_last
+      Length: 0.3
+      Radius: 0.018
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 4
+      Pitch: 0.6
+      Yaw: 3.9
+      Focal Point:
+        X: 1
+        Y: 0
+        Z: 0
+Window Geometry:
+  Width: 1200
+  Height: 800
