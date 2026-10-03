@@ -9,7 +9,11 @@ from host.arcore_gpu_map import confirmed_voxels_gpu
 class GpuConfirmedMapTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import torch
+        try:
+            import torch
+        except ModuleNotFoundError as error:
+            if error.name != 'torch':raise
+            raise unittest.SkipTest('Optional CUDA tests require PyTorch') from error
         if not torch.cuda.is_available():raise unittest.SkipTest('CUDA GPU unavailable')
 
     def test_pixels_from_one_frame_cannot_inflate_independent_support(self):
