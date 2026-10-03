@@ -12,7 +12,7 @@ import time
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image,ImageTk
-from host.ros_guidance import (mapping_guidance, IDLE_TEXT, PREPARATION, STEPS,
+from host.ros_guidance import (mapping_guidance, IDLE_TEXT, PREPARATION, STEPS, FLOOR_PREPARATION, FLOOR_STEPS,
                                ROOM_PREPARATION, ROOM_STEPS, TEST_SECONDS, ROOM_SECONDS)
 from host.ros_map_catalog import available,saved_maps,localization_maps,display_name
 from host.ros_scale import default_scale,scale_label
@@ -76,7 +76,8 @@ class Dashboard:
         self.progress=ttk.Progressbar(panel,maximum=TEST_SECONDS);self.progress.pack(fill='x',pady=(0,6))
         self.health=tk.Label(panel,text='Takip sonucu bekleniyor',bg='#14202e',fg='#c4d0de',font=('DejaVu Sans',12),justify='left',wraplength=315);self.health.pack(anchor='w',pady=6)
         self.buttons=[]
-        for label,diagnostic,engine,duration in [('90 sn rehberli oda testi',False,'sgbm',TEST_SECONDS),
+        for label,diagnostic,engine,duration in [('90 sn AI ile zemin haritası',False,'ai',TEST_SECONDS),
+                ('90 sn rehberli oda testi',False,'sgbm',TEST_SECONDS),
                 ('3 dk tüm odayı dolaş',False,'sgbm',ROOM_SECONDS),
                 ('90 sn önceki stereo (alternatif)',False,'stereo',TEST_SECONDS),
                 ('30 sn tanılama (ayrı test)',True,'auto',30)]:
@@ -117,15 +118,17 @@ class Dashboard:
         tk.Label(dialog,text='Yeni dama çekimi yok · Cetvel gerekmiyor · Kamera henüz açılmadı' if self.process is None else 'Test sürüyor · Hareket yönergesi ana pencerede',
                  font=('DejaVu Sans',12),bg='#14202e',fg='#6ce4b2').pack(anchor='w',padx=20,pady=(0,12))
         tabs=ttk.Notebook(dialog);tabs.pack(fill='both',expand=True,padx=20,pady=(0,12))
-        preparation='\n\n'.join(f'{i+1}. {text}' for i,text in enumerate(ROOM_PREPARATION if room else PREPARATION))
+        preparation='\n\n'.join(f'{i+1}. {text}' for i,text in enumerate(ROOM_PREPARATION if room else FLOOR_PREPARATION if depth_engine=='ai' else PREPARATION))
+        scale_note=(current_scale_label()+' · AI derinliği model tahmini; ölçülmüş mesafe sayılmaz'
+                    if depth_engine=='ai' else current_scale_label())
         preparation+='\n\nGEREKENLER: ADB bağlı telefon, aydınlık eşyalı sahne, başlangıç işareti ve '+('güvenli oda yolu' if room else 'kısa boş alan')+'.\n\n'+(
             'Bu test hareket sırasında bağlantılı bir harita oluşmasını deneyecek. '+
-            current_scale_label()+'. '+
+            scale_note+'. '+
             'Tam oda ve santimetre doğruluğu bu tek kayıttan garanti edilemez.\n\n'
             'Yandaki “2 · Hareket sırası” sekmesini de oku. Başlatınca ana ekrandaki büyük adım ve sayacı takip et.')
-        stages=ROOM_STEPS if room else STEPS
+        stages=ROOM_STEPS if room else FLOOR_STEPS if depth_engine=='ai' else STEPS
         movement='\n\n'.join(f'{i+1}/{len(stages)} · {start}–{end} sn · {title}\n{text}' for i,(start,end,title,text) in enumerate(stages))
-        if depth_engine=='sgbm':
+        if depth_engine in ('sgbm','ai'):
             movement+=('\n\nBaşlatınca iki RViz penceresi otomatik açılır. Panel önde kalır; 3B görünümü Alt+Tab ile seçebilirsin. '
                        'Anlık 3B derinlik kamera çevresindeki tek karelik noktaları, diğer pencere biriken haritayı gösterir. '
                        'Takip kaybı kaydedilir; deneysel harita, görüntü kaydı ve anlık 3B görüntü sürer. '
@@ -148,9 +151,9 @@ class Dashboard:
             dialog.destroy();self.guide_dialog=None
             if room:self.start(False,depth_engine=depth_engine,seconds=duration)
             else:self.start(False,depth_engine=depth_engine)
-            if depth_engine=='sgbm':self.root.after(1500,self.open_live_viewers)
+            if depth_engine in ('sgbm','ai'):self.root.after(1500,self.open_live_viewers)
         if self.process is None:
-            tk.Button(footer,text=('Hazırım · 3 dk tüm oda turunu başlat' if room else 'Hazırım · 90 sn testi başlat'+(' (önceki stereo)' if depth_engine=='stereo' else ' (SGBM)')),
+            tk.Button(footer,text=('Hazırım · 3 dk tüm oda turunu başlat' if room else 'Hazırım · 90 sn testi başlat'+(' (önceki stereo)' if depth_engine=='stereo' else ' (AI zemin)' if depth_engine=='ai' else ' (SGBM)')),
                       command=launch,font=('DejaVu Sans',13,'bold'),pady=10,bg='#6ce4b2').pack(side='right')
         tk.Button(footer,text='Kapat · ana ekrana dön',command=dialog.destroy,font=('DejaVu Sans',12),pady=10).pack(side='left')
 
@@ -178,13 +181,14 @@ class Dashboard:
         if seconds not in (TEST_SECONDS,ROOM_SECONDS):raise ValueError('Unsupported mapping duration')
         if self.guide_dialog is not None and self.guide_dialog.winfo_exists():self.guide_dialog.destroy()
         self.mode='replay' if replay else 'live'
-        self.scale_status.config(text='Ölçek: seçilen kaydın kendi ayarı kullanılacak' if replay else current_scale_label())
+        self.scale_status.config(text='Ölçek: seçilen kaydın kendi ayarı kullanılacak' if replay else
+            current_scale_label()+' · AI derinliği model tahmini' if depth_engine=='ai' else current_scale_label())
         self.depth_engine=depth_engine;self.localize_map_db=localize_map_db;self.last_guide_title=None;self.capture_seconds=seconds
         self.directory=None;self.log_position=0;self.status_position=0;self.tracking=0;self.lost=0;self.stopping_at=None;self.last_quality=None;self.last_odom_time=0
         self.diagnostic=diagnostic;self.started=time.monotonic()
         env=dict(os.environ,PHONE_DIAGNOSTIC='1' if diagnostic else '0',
                  PHONE_CAPTURE_SECONDS='45' if diagnostic else str(seconds),PHONE_RTABMAP_VIZ='false',PHONE_DEPTH_ENGINE=depth_engine,
-                 PHONE_TRACKING_LOSS_POLICY='continue-provisional' if depth_engine=='sgbm' and not diagnostic else 'keep-capture')
+                 PHONE_TRACKING_LOSS_POLICY='continue-provisional' if depth_engine in ('sgbm','ai') and not diagnostic else 'keep-capture')
         if localize_map_db is not None:env['PHONE_LOCALIZE_MAP_DB']=str(localize_map_db)
         command=[str(PROJECT/('scripts/start_ros_replay.sh' if replay else 'scripts/start_ros_live_mapping.sh'))]
         if replay:command+=['--depth-engine',depth_engine,'--tracking-loss-policy',env['PHONE_TRACKING_LOSS_POLICY']]
@@ -199,7 +203,7 @@ class Dashboard:
                if seconds==ROOM_SECONDS else
                '0–5 sn: SABİT  →  5–35: YANA  →  35–55: İLERİ\n55–85: GERİ DÖN  →  85–90: SABİT')
         self.route.config(text=route if not diagnostic and not replay else '')
-        self.detail.config(text=mapping_guidance(None,time.monotonic(),duration_seconds=seconds)[2] if not diagnostic
+        self.detail.config(text=mapping_guidance(None,time.monotonic(),duration_seconds=seconds,floor_mode=depth_engine=='ai')[2] if not diagnostic
                            else 'Hazırlık sırasında sabit tut. Sonra üç aşamanın yönergelerini takip et.')
         if localize_map_db is not None:
             self.state.config(text='Eski haritada konum aranıyor')
@@ -221,6 +225,7 @@ class Dashboard:
         if self.process is not None:return
         self.mode='preview';self.diagnostic=False;self.stopping_at=None;self.last_guide_title=None
         self.preview_seen=False;self.last_scene=None
+        (PROJECT/'work').mkdir(parents=True,exist_ok=True)
         self.directory=Path(tempfile.mkdtemp(prefix='ros-preview-',dir=PROJECT/'work'))
         self.log_position=0;self.status_position=0;self.tracking=0;self.lost=0
         command=[os.sys.executable,'-m','host.ros_live',
@@ -285,14 +290,14 @@ class Dashboard:
             if folder:self.show_map(folder,ros=True)
 
     def open_local_cloud(self):
-        if self.process is None or self.depth_engine!='sgbm' or self.mode=='preview':
-            self.footer.config(text='Anlık 3B derinlik için SGBM ile canlı oturum veya kayıt oynatımı başlatın.')
+        if self.process is None or self.depth_engine not in ('sgbm','ai') or self.mode=='preview':
+            self.footer.config(text='Anlık 3B derinlik için SGBM veya AI ile canlı oturum başlatın.')
             return
         self.viewers.append(subprocess.Popen(['rviz2','-d',str(PROJECT/'configs/phone-live-depth.rviz')],cwd=PROJECT,start_new_session=True))
         self.footer.config(text='Anlık 3B: kameranın o anda gördüğü noktalar. Biriken oda haritası ayrı ROS görünümündedir.')
 
     def open_live_viewers(self):
-        if self.process is None or self.process.poll() is not None or self.mode!='live' or self.depth_engine!='sgbm':return
+        if self.process is None or self.process.poll() is not None or self.mode!='live' or self.depth_engine not in ('sgbm','ai'):return
         self.open_local_cloud();self.open_ros()
         self.root.after(300,self.root.lift)
         self.footer.config(text='İki RViz penceresi açıldı. Panel hareket adımlarını önde gösterir; 3B pencereler için Alt+Tab kullanabilirsiniz.')
@@ -379,15 +384,15 @@ class Dashboard:
             capture_only=(self.directory/'mapping-fallback.json').exists()
             if self.process is None:state='Tamamlanan oturum'
             elif time.monotonic()-self.last_odom_time>3:state='Yeni takip sonucu bekleniyor'
-            if self.process is not None and capture_only:state='Harita durdu · anlık 3B ve kayıt sürüyor' if self.depth_engine=='sgbm' else 'Harita durdu · görüntü kaydı sürüyor'
+            if self.process is not None and capture_only:state='Harita durdu · anlık 3B ve kayıt sürüyor' if self.depth_engine in ('sgbm','ai') else 'Harita durdu · görüntü kaydı sürüyor'
             point_status=self.directory/'mapping-status.json'
             points=json.loads(point_status.read_text()).get('cloudPoints',0) if point_status.exists() else 0
             depth_path=self.directory/'depth/status.json';depth_text=''
             if depth_path.exists():
                 depth=json.loads(depth_path.read_text());n=depth.get('counts',{}).get('publishedDepth',0);timing=depth.get('computeMs')
                 cloud=depth.get('counts',{}).get('localCloudLatestPoints',0)
-                depth_text=f'\nSGBM: {n} derinlik karesi · anlık 3B: {cloud:,} nokta'+(f" · {timing['median']:.0f} ms" if timing else '')
-                skipped=sum(depth.get('counts',{}).get(k,0) for k in ('supersededPairs','staleBefore','staleAfter'))
+                depth_text=f"\n{'AI' if self.depth_engine=='ai' else 'SGBM'}: {n} derinlik karesi · anlık 3B: {cloud:,} nokta"+(f" · {timing['median']:.0f} ms" if timing else '')
+                skipped=sum(depth.get('counts',{}).get(k,0) for k in ('supersededPairs','supersededFrames','staleBefore','staleAfter'))
                 if skipped:depth_text+=f'\nGüncellik için atlanan: {skipped}'
             localization_text=''
             if self.localize_map_db is not None and self.directory:
@@ -418,7 +423,8 @@ class Dashboard:
                 failed=bool(self.directory and (self.directory/'hybrid-tracking-failure.json').exists()) and not provisional
                 capture_only=bool(self.directory and (self.directory/'mapping-fallback.json').exists())
                 title,counter,detail=mapping_guidance(status,time.monotonic(),tracking_failed=failed,
-                                                       capture_continues=capture_only,duration_seconds=self.capture_seconds)
+                                                       capture_continues=capture_only,duration_seconds=self.capture_seconds,
+                                                       floor_mode=self.depth_engine=='ai')
                 if self.mode=='replay' and not status:
                     title,counter,detail='ROS hazırlanıyor','Bekleniyor…','Telefon kullanılmıyor. Kayıtlı hareket birazdan işlenecek.'
                 if self.localize_map_db is not None:
@@ -437,7 +443,7 @@ class Dashboard:
                     elapsed=status.get('elapsedSeconds',self.capture_seconds-status.get('remainingSeconds',self.capture_seconds))
                     self.progress['value']=min(self.capture_seconds,max(0,elapsed))
                     self.total.config(text=f"Toplam {status['remainingSeconds']} sn kaldı / {self.capture_seconds} sn")
-                    if capture_only:self.route.config(text=('Görüntü kaydı ve anlık 3B sürüyor · biriken harita durdu.\n' if self.depth_engine=='sgbm' else
+                    if capture_only:self.route.config(text=('Görüntü kaydı ve anlık 3B sürüyor · biriken harita durdu.\n' if self.depth_engine in ('sgbm','ai') else
                                                             'Görüntü kaydı sürüyor · biriken harita durdu.\n')+
                                                            'Yavaşça devam edebilir veya Durdur ve kaydet ile bitirebilirsin.')
             if self.stopping_at and time.monotonic()-self.stopping_at>100 and self.process.poll() is None:

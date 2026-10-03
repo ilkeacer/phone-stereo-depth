@@ -1,5 +1,5 @@
 import unittest
-from host.ros_guidance import mapping_guidance, STEPS, ROOM_SECONDS, ROOM_STEPS
+from host.ros_guidance import mapping_guidance, STEPS, FLOOR_STEPS, ROOM_SECONDS, ROOM_STEPS
 
 
 class GuidanceTests(unittest.TestCase):
@@ -80,3 +80,9 @@ class GuidanceTests(unittest.TestCase):
             self.assertIn('12 stereo çift',result[2])
         status['elapsedSeconds']=ROOM_SECONDS;status['remainingSeconds']=0
         self.assertEqual(mapping_guidance(status,100)[0],'TURU BİTİR')
+
+    def test_floor_guide_keeps_ground_in_view_during_motion(self):
+        for start,end,title,_ in FLOOR_STEPS:
+            result=mapping_guidance(self.active(start),100,floor_mode=True)
+            self.assertIn(title,result[0]);self.assertEqual(result[1],f'{end-start} sn bu adım')
+        self.assertIn('Zemin',mapping_guidance(self.active(36),100,floor_mode=True)[2])

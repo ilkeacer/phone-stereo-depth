@@ -17,3 +17,9 @@ class HybridGuardTests(unittest.TestCase):
         guard.observe(10,False);guard.observe(20,False);guard.check()
         guard.observe(1,False)
         with self.assertRaisesRegex(RuntimeError,'non-increasing'):guard.check()
+
+    def test_rgbd_loss_invalidates_export_even_after_recovery(self):
+        guard=HybridTrackingGuard('rgbd')
+        guard.observe(1,False);guard.observe(2,True);guard.observe(3,False)
+        self.assertEqual(guard.lost,1)
+        with self.assertRaisesRegex(RuntimeError,'rgbd mapping invalidated: tracking lost'):guard.check()

@@ -52,6 +52,26 @@ class SessionSummaryTests(unittest.TestCase):
             self.assertEqual(result['trackingSource'],'synchronized_OdomInfo')
             self.assertEqual(result['odometryInputCoverageRatio'],.5)
 
+    def test_rgbd_lost_status_invalidates_map_without_guard_marker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            (root/'lifecycle.json').write_text(json.dumps(dict(inputKind='rgbd')))
+            (root/'odometry-status.jsonl').write_text('{"lost": false}\n{"lost": true}\n')
+            result=summarize(root)
+            self.assertEqual(result['lostResults'],1)
+            self.assertTrue(result['depthTrackingInvalid'])
+            self.assertIn('diagnostic evidence',result['conclusion'])
+
+    def test_live_ai_depth_scale_does_not_inherit_stereo_measurement_label(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            (root/'capture.json').write_text(json.dumps(dict(scaleSource='measured',squareMm=21.44)))
+            (root/'lifecycle.json').write_text(json.dumps(dict(inputKind='hybrid',
+                depthScaleSource='model_predicted_metres',odometryScaleSource='measured')))
+            result=summarize(root)
+            self.assertEqual(result['scaleSource'],'model_predicted_metres')
+            self.assertEqual(result['odometryScaleSource'],'measured')
+
     def test_missing_capture_is_not_success(self):
         with tempfile.TemporaryDirectory() as temp:
             result=summarize(Path(temp))

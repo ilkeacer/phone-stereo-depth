@@ -3,6 +3,14 @@ from pathlib import Path
 from scripts.export_public import public_files,write_archive
 
 class PublicExportTests(unittest.TestCase):
+ def test_only_empty_scene_template_is_allowed_and_private_html_is_excluded(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   root=Path(tmp);(root/'host').mkdir()
+   template=root/'host/arcore_scene_viewer.html';template.write_text('<script>__SCENE_PAYLOAD__</script>')
+   (root/'host/viewer.html').write_text('<script>{"glb":"PRIVATE_BASE64_SCENE"}</script>')
+   self.assertEqual(public_files(root),[template])
+   template.write_text('<script>{"glb":"PRIVATE_BASE64_SCENE"}</script>')
+   with self.assertRaisesRegex(ValueError,'private scene'):public_files(root)
  def test_archive_retains_executable_mode_and_never_overwrites(self):
   with tempfile.TemporaryDirectory() as tmp:
    root=Path(tmp);script=root/'start.sh';script.write_text('#!/bin/sh\nexit 0\n');script.chmod(0o755)

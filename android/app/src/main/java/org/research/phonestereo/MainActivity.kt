@@ -2,6 +2,7 @@ package org.research.phonestereo
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.os.*
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -25,6 +26,7 @@ class MainActivity : Activity() {
     private lateinit var display: TextView
     private lateinit var root: File
     private val previewViews=mutableMapOf<String,ImageView>()
+    private val previewStatusViews=mutableMapOf<String,TextView>()
     private val stopped = AtomicBoolean(false)
     private var started = false
     private var livePairs:LivePairs?=null
@@ -36,23 +38,46 @@ class MainActivity : Activity() {
         val j = obj("event" to kind, "cameraId" to id, "elapsedNs" to SystemClock.elapsedRealtimeNanos(), *fields)
         File(dir,"events.jsonl").appendText(j.toString()+"\n")
         Log.i("StereoProbe", j.toString())
-        runOnUiThread { display.text = "Phone Stereo Probe\n${root.name}\n${dir.name}\n$kind ${id ?: ""}\n\nKamera deneyi çalışıyor.\nSonuçlar uygulama dosyalarına kaydediliyor." }
+        runOnUiThread {
+            display.text=if(intent.getBooleanExtra("live",false))
+                "STEREO HARİTA · ${dir.name}\n$kind ${id ?: ""}"
+            else "Phone Stereo Probe\n${root.name}\n${dir.name}\n$kind ${id ?: ""}\n\nKamera deneyi çalışıyor.\nSonuçlar uygulama dosyalarına kaydediliyor."
+        }
     }
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
+        if(intent.getBooleanExtra("arcoreProbe",false)) {
+            // Legacy desktop request opens the chooser; only a phone button starts ARCore.
+            startActivity(Intent(this,HomeActivity::class.java))
+            finish()
+            return
+        }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        display = TextView(this).apply { textSize=20f; setPadding(24,40,24,24) }
+        val live=intent.getBooleanExtra("live",false)
+        display = TextView(this).apply { textSize=if(live) 14f else 20f; setPadding(24,24,24,8) }
         val layout=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL }
-        layout.addView(display,LinearLayout.LayoutParams(-1,0,0.40f))
-        val previews=LinearLayout(this).apply { orientation=LinearLayout.HORIZONTAL }
+        layout.addView(display,LinearLayout.LayoutParams(-1,0,if(live) 0.12f else 0.40f))
+        if(live) layout.addView(TextView(this).apply {
+            text="HARİTA KADRAJI: 20 TELEFOTO\nZeminle birlikte halı sınırı veya sabit eşya kenarı bu büyük görüntüde görünsün. Az ışık uyarısı bilgi amaçlıdır."
+            textSize=16f; setPadding(24,4,24,8); setTextColor(Color.rgb(255,220,140))
+        },LinearLayout.LayoutParams(-1,0,0.12f))
+        val previews=LinearLayout(this).apply { orientation=if(live) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL }
         for(id in listOf("20","21")) {
             val box=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL }
-            box.addView(TextView(this).apply { text=if(id=="20") "20 · Üst / Telefoto" else "21 · Alt / Geniş"; textSize=15f })
+            box.addView(TextView(this).apply {
+                text=if(id=="20") "20 · TELEFOTO · AI derinlik + stereo takip" else "21 · GENİŞ AÇI · stereo takip"
+                textSize=if(live) 17f else 15f
+            })
+            if(live) {
+                val status=TextView(this).apply { text="Kamera ve ışık ölçümü bekleniyor"; textSize=15f }
+                previewStatusViews[id]=status;box.addView(status)
+            }
             val image=ImageView(this).apply { scaleType=ImageView.ScaleType.FIT_CENTER }
             previewViews[id]=image;box.addView(image,LinearLayout.LayoutParams(-1,0,1f))
-            previews.addView(box,LinearLayout.LayoutParams(0,-1,1f))
+            previews.addView(box,if(live) LinearLayout.LayoutParams(-1,0,if(id=="20") 0.68f else 0.32f)
+                else LinearLayout.LayoutParams(0,-1,1f))
         }
-        layout.addView(previews,LinearLayout.LayoutParams(-1,0,0.60f));setContentView(layout)
+        layout.addView(previews,LinearLayout.LayoutParams(-1,0,if(live) 0.76f else 0.60f));setContentView(layout)
         manager = getSystemService(CameraManager::class.java)
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(Manifest.permission.CAMERA), 10)
@@ -163,6 +188,7 @@ class MainActivity : Activity() {
         val opened=CountDownLatch(1); val configured=CountDownLatch(1); val first=CountDownLatch(1); val closed=CountDownLatch(1)
         val closing=AtomicBoolean(false)
         @Volatile var failed=false
+        @Volatile var actualIso:Int?=null
         @Volatile var device:CameraDevice?=null
         @Volatile var session:CameraCaptureSession?=null
         @Volatile var count=0
@@ -234,7 +260,19 @@ class MainActivity : Activity() {
                                     previewViews[id]?.setImageBitmap(Bitmap.createBitmap(bitmap,0,0,bitmap.width,bitmap.height,matrix,true))
                                 }
                             }
-                            record.put("meanLuma",planes[0].sumOf { it.toInt() and 255 }.toDouble()/planes[0].size)
+                            val meanLuma=planes[0].sumOf { it.toInt() and 255 }.toDouble()/planes[0].size
+                            record.put("meanLuma",meanLuma)
+                            if(livePairs!=null && count%15==0) {
+                                val dim=meanLuma<50.0 // Advisory threshold; tracking is decided by the mapper.
+                                val isoText=actualIso?.toString() ?: "…"
+                                runOnUiThread {
+                                    previewStatusViews[id]?.apply {
+                                        text="$count kare · ışık ${meanLuma.toInt()}/255 · ISO $isoText"+
+                                            if(dim) " · AZ IŞIK" else " · ışık daha iyi"
+                                        setTextColor(if(dim) Color.rgb(255,190,90) else Color.rgb(130,230,170))
+                                    }
+                                }
+                            }
                         }
                         images.write(record.toString()); images.newLine()
                     } catch(e:Exception) { error("image_exception",e) } finally { im.close() }
@@ -277,6 +315,7 @@ class MainActivity : Activity() {
                         }.build()
                         s.setRepeatingRequest(req,object:CameraCaptureSession.CaptureCallback() {
                             override fun onCaptureCompleted(s:CameraCaptureSession,r:CaptureRequest,result:TotalCaptureResult) {
+                                actualIso=result.get(CaptureResult.SENSOR_SENSITIVITY)
                                 val record=obj("cameraId" to id,"sensorTimestampNs" to result.get(CaptureResult.SENSOR_TIMESTAMP),"frameNumber" to result.frameNumber,
                                     "exposureTimeNs" to result.get(CaptureResult.SENSOR_EXPOSURE_TIME),"iso" to result.get(CaptureResult.SENSOR_SENSITIVITY),
                                     "focusDiopters" to result.get(CaptureResult.LENS_FOCUS_DISTANCE),"focalLengthMm" to result.get(CaptureResult.LENS_FOCAL_LENGTH),

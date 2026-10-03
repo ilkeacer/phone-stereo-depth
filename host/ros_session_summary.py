@@ -69,7 +69,8 @@ def summarize(directory):
         process_failures += [line for line in re.findall(r'\[ERROR\].*?process has died.*',after) if not re.search(r'exit code -2[,\]]',line)]
     cleanup_ok=not any(c.get('forcedKill') or c.get('remaining') for c in lifecycle.get('cleanup',[]))
     map_state='none' if not accumulated else 'connected' if graph.get('allActiveNodesConnected') else 'partial'
-    return dict(mapState=map_state,publishedPairs=capture.get('publishedPairs',0),
+    depth_tracking_invalid=lifecycle.get('inputKind') in ('rgbd','hybrid') and lost>0
+    return dict(mapState=map_state,publishedPairs=capture.get('publishedPairs',0),inputKind=lifecycle.get('inputKind'),
         odometryResults=odometry_results,trackingResults=tracked,lostResults=lost,graph=graph,mappingTimeline=timeline,
         trackingSource='synchronized_OdomInfo' if statuses is not None else 'legacy_console_quality_proxy',
         trackingCountScope='Matched Odom/OdomInfo only; independent unpaired guard events reported separately' if statuses is not None else 'Console proxy only',
@@ -84,12 +85,15 @@ def summarize(directory):
         inputPairs=capture.get('inputPairs'),leftImagesObserved=capture.get('publishedPairs',0),
         odometryInputCoverageRatio=odometry_results/(capture.get('inputPairs') or capture['publishedPairs']) if (capture.get('inputPairs') or capture.get('publishedPairs')) else None,
         accumulatedGraphPresent=accumulated,mapAccuracyValidated=False,
+        depthTrackingInvalid=depth_tracking_invalid,
         squareMm=capture.get('squareMm'),scaleMeasurement=capture.get('scaleMeasurement'),
-        scaleSource=capture.get('scaleSource'),odometryScaleSource=capture.get('odometryScaleSource',capture.get('scaleSource')),captureError=capture.get('error'),
+        scaleSource=lifecycle.get('depthScaleSource') or capture.get('scaleSource'),
+        odometryScaleSource=lifecycle.get('odometryScaleSource') or capture.get('odometryScaleSource',capture.get('scaleSource')),
+        captureError=capture.get('error'),
         captureReportPresent=capture_path.exists(),processFailures=process_failures,
         sessionError=lifecycle.get('error'),shutdownClean=cleanup_ok,mode=lifecycle.get('mode','live'),
         conclusion=('Session failed; any retained graph is diagnostic evidence, not an accepted map.' if
-                    lifecycle.get('error') or capture.get('error') or process_failures or guard_failure else
+                    lifecycle.get('error') or capture.get('error') or process_failures or guard_failure or depth_tracking_invalid else
                     'One connected graph exists; trajectory/scale accuracy remains unverified.' if map_state=='connected' else
                     'Only disconnected map fragments exist; this is not one continuous map.' if map_state=='partial' else
                     'No accumulated map demonstrated by this session.'))

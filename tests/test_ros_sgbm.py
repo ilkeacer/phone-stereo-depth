@@ -3,7 +3,7 @@ from types import SimpleNamespace as N
 import unittest
 import numpy as np
 from host.ros_sgbm import CheckedStereoDepth,checked_pair,depth_message,local_cloud_message
-from host.ros_session import online_depth_requested
+from host.ros_session import online_depth_requested,expected_subscribers
 try:
     from std_msgs.msg import Header
     ROS=True
@@ -56,11 +56,22 @@ class SGBMContractTests(unittest.TestCase):
     def test_engine_routing_does_not_double_publish_cached_depth(self):
         self.assertFalse(online_depth_requested('live',False,'auto','stereo'))
         self.assertTrue(online_depth_requested('live',False,'sgbm','stereo'))
+        self.assertTrue(online_depth_requested('live',False,'ai','stereo'))
         self.assertFalse(online_depth_requested('live',True,'auto','stereo'))
         self.assertFalse(online_depth_requested('replay',False,'auto','hybrid'))
         self.assertTrue(online_depth_requested('replay',False,'sgbm','stereo'))
         for kind in ('hybrid','rgbd'):
             with self.assertRaises(ValueError):online_depth_requested('replay',False,'sgbm',kind)
+            with self.assertRaises(ValueError):online_depth_requested('replay',False,'ai',kind)
+
+    def test_ai_readiness_waits_for_left_only_and_preserves_stereo_counts(self):
+        left='/phone/left/image_rect'
+        self.assertEqual(expected_subscribers('hybrid','ai',left,left),4)
+        self.assertEqual(expected_subscribers('hybrid','ai','/phone/left/camera_info',left),3)
+        self.assertEqual(expected_subscribers('hybrid','ai','/phone/right/image_rect',left),1)
+        self.assertEqual(expected_subscribers('hybrid','ai','/phone/depth/image_rect',left),1)
+        self.assertEqual(expected_subscribers('stereo','auto',left,left),3)
+        self.assertEqual(expected_subscribers('stereo','auto','/phone/right/image_rect',left),2)
 
 
 @unittest.skipUnless(ROS,'ROS runtime required')

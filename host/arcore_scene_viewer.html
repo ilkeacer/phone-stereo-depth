@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Kayıtlı 3B sahne</title><style>
+*{box-sizing:border-box}body{margin:0;background:#111820;color:#e9edf2;font:15px system-ui,sans-serif}
+canvas{display:block;width:100vw;height:100vh;touch-action:none}aside{position:absolute;top:18px;left:18px;width:min(360px,calc(100vw - 36px));padding:20px;background:#17222eee;border:1px solid #344251;border-radius:14px;box-shadow:0 8px 32px #0005}
+h1{margin:0 0 8px;font-size:21px}p{margin:8px 0;line-height:1.5;color:#b6c3d1}.badge{font-size:12px;color:#9ce5d2;letter-spacing:.08em}button,a{font:inherit;color:#e9edf2;border:1px solid #4b5c70;background:#253448;border-radius:8px;padding:8px 11px;cursor:pointer;text-decoration:none}button[aria-pressed=true]{background:#216f61;border-color:#58b59d}.buttons{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.stats{font-size:14px;color:#e0e6ec}small{display:block;color:#a8b6c7;line-height:1.5}label{display:block;margin:10px 0}.legend{display:flex;gap:15px;font-size:13px}.dot{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:50%;background:#ff750a}.yellow{background:#fae019}#error{color:#ffb6ab}footer{position:absolute;bottom:14px;right:18px;font-size:12px;color:#9aaabc}
+</style></head><body><canvas id="view" aria-label="Döndürülebilir kayıtlı üç boyutlu sahne"></canvas>
+<aside><div class="badge">YEREL KAYIT · KAMERA KAPALI</div><h1>Görülen alanın 3B çıktısı</h1>
+<p>Kayıttaki renkli yüzeyler ve telefonun izlediği tahmini yol.</p><div id="stats" class="stats"></div>
+<div class="buttons"><button id="surface" aria-pressed="true">Yüzey</button><button id="points" aria-pressed="false">Noktalar</button><button id="fit">Tümünü göster</button><button id="top">Üstten</button></div>
+<label><input id="path" type="checkbox" checked> Kamera yolunu göster</label><div class="legend"><span><i class="dot"></i>Kayıtlı yol</span><span><i class="dot yellow"></i>Son derinlik pozu</span></div>
+<p id="status"></p><small>Sol tuşla döndür · sağ tuşla kaydır · tekerlekle yaklaş. Dosya çevrimdışı açılabilir.</small>
+<p><small id="limits">Sadece kayıtta görülen yüzeyler. Üst duvar/tavan kapsamı ve gerçek metre doğruluğu doğrulanmadı. Boş bölgeler bilinmeyendir.</small></p>
+<div class="buttons"><a id="download" download="observed_room.glb">3B dosyayı kaydet (.glb)</a></div><div id="error"></div></aside>
+<footer>ARCore pozları + Depth Pro tahmini · oturuma özgü koordinatlar</footer>
+<script id="scene-data" type="application/json">__SCENE_PAYLOAD__</script><script>
+'use strict';
+const data=JSON.parse(document.getElementById('scene-data').textContent),canvas=document.getElementById('view');
+const s=data.stats,isTsdf=s.settings.fusion==='nvblox_tsdf';document.getElementById('stats').textContent=`${s.outputPoints.toLocaleString('tr-TR')} ${isTsdf?'yüzey köşesi':'kaynak nokta'} · ${s.meshTriangles.toLocaleString('tr-TR')} üçgen · ${s.poses} poz · ${isTsdf?'GPU TSDF denemesi; ayrı görüş desteği doğrulanmadı':`yüzey başına en az ${s.settings.minIndependentFaceFrames||1} ayrı kare`}`;
+if(isTsdf)document.querySelector('footer').textContent='ARCore pozları + GPU TSDF · fiziksel doğruluk doğrulanmadı';
+if(isTsdf){document.querySelector('h1').textContent='GPU ile birleştirilmiş 3B yüzey';document.getElementById('limits').textContent='TSDF gözlemler arasında yüzey hesaplayabilir. Ayrı görüş desteği, tam oda kapsamı ve fiziksel doğruluk doğrulanmadı.';}
+const decoded=atob(data.glb),bytes=new Uint8Array(decoded.length);for(let i=0;i<decoded.length;i++)bytes[i]=decoded.charCodeAt(i);
+const dv=new DataView(bytes.buffer),jsonLength=dv.getUint32(12,true),gltf=JSON.parse(new TextDecoder().decode(bytes.subarray(20,20+jsonLength))),binStart=20+jsonLength+8;
+const link=document.getElementById('download');link.href=URL.createObjectURL(new Blob([bytes],{type:'model/gltf-binary'}));
+const gl=canvas.getContext('webgl2',{antialias:true,preserveDrawingBuffer:true});
+if(!gl){document.getElementById('error').textContent='Bu görüntüleyici WebGL 2 gerektiriyor. GLB dosyasını ayrı bir 3B programda açabilirsiniz.';throw new Error('WebGL2 unavailable');}
+function shader(type,source){const value=gl.createShader(type);gl.shaderSource(value,source);gl.compileShader(value);if(!gl.getShaderParameter(value,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(value));return value;}
+const vs=shader(gl.VERTEX_SHADER,`#version 300 es
+in vec3 a_position;in vec3 a_color;uniform mat4 u_mvp;out vec3 color;void main(){gl_Position=u_mvp*vec4(a_position,1.0);gl_PointSize=2.0;color=a_color;}`);
+const fs=shader(gl.FRAGMENT_SHADER,`#version 300 es
+precision highp float;in vec3 color;out vec4 pixel;void main(){vec3 lo=12.92*color;vec3 hi=1.055*pow(max(color,vec3(0)),vec3(1.0/2.4))-.055;pixel=vec4(mix(hi,lo,lessThanEqual(color,vec3(.0031308))),1);}`);
+const program=gl.createProgram();gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));gl.useProgram(program);
+const matrixLocation=gl.getUniformLocation(program,'u_mvp');
+function accessor(id){const a=gltf.accessors[id],v=gltf.bufferViews[a.bufferView],start=binStart+(v.byteOffset||0)+(a.byteOffset||0),n=a.count*(a.type==='VEC3'?3:1);return a.componentType===5126?new Float32Array(bytes.buffer,start,n):new Uint32Array(bytes.buffer,start,n);}
+const objects=gltf.meshes.map(mesh=>{const p=mesh.primitives[0],position=accessor(p.attributes.POSITION),color=accessor(p.attributes.COLOR_0),vao=gl.createVertexArray();gl.bindVertexArray(vao);
+for(const [name,values] of [['a_position',position],['a_color',color]]){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);const loc=gl.getAttribLocation(program,name);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);}
+let count=position.length/3;if(p.indices!==undefined){const b=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b);const indices=accessor(p.indices);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);count=indices.length;}
+return {vao,count,vertices:position.length/3,mode:p.mode,indexed:p.indices!==undefined};});
+const add=(a,b)=>a.map((v,i)=>v+b[i]),sub=(a,b)=>a.map((v,i)=>v-b[i]),mul=(a,k)=>a.map(v=>v*k),dot=(a,b)=>a.reduce((v,x,i)=>v+x*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>mul(a,1/Math.max(Math.hypot(...a),1e-9));
+const bound=s.cloudBoundsEstimatedM,min=bound.min,max=bound.max,center=mul(add(min,max),.5),radius=Math.max(...sub(max,min))*.6;
+let target=center.slice(),distance=radius*2.4,azimuth=-2.9,elevation=.58,mode=s.meshTriangles?'surface':'points',showPath=true,drag=null;
+function lookAt(eye,at){const z=norm(sub(eye,at)),x=norm(cross([0,0,1],z)),y=cross(z,x);return [x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1];}
+function perspective(aspect){const f=1/Math.tan(Math.PI/7),near=.02,far=Math.max(100,distance+radius*5);return [f/aspect,0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0];}
+function matrixMultiply(a,b){const r=Array(16).fill(0);for(let c=0;c<4;c++)for(let row=0;row<4;row++)for(let k=0;k<4;k++)r[c*4+row]+=a[k*4+row]*b[c*4+k];return r;}
+function draw(){const ratio=Math.min(devicePixelRatio||1,2),w=Math.round(innerWidth*ratio),h=Math.round(innerHeight*ratio);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+gl.viewport(0,0,w,h);gl.clearColor(.067,.094,.125,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
+const eye=add(target,[distance*Math.cos(elevation)*Math.cos(azimuth),distance*Math.cos(elevation)*Math.sin(azimuth),distance*Math.sin(elevation)]);
+gl.uniformMatrix4fv(matrixLocation,false,new Float32Array(matrixMultiply(perspective(w/h),lookAt(eye,target))));
+objects.forEach((obj,i)=>{if(i>0&&!showPath)return;gl.bindVertexArray(obj.vao);if(i===0&&mode==='points')gl.drawArrays(gl.POINTS,0,obj.vertices);else if(obj.indexed)gl.drawElements(obj.mode,obj.count,gl.UNSIGNED_INT,0);else{gl.disable(gl.DEPTH_TEST);gl.drawArrays(obj.mode,0,obj.count);gl.enable(gl.DEPTH_TEST);}});
+document.getElementById('status').textContent=!s.meshTriangles?'İstenen kare desteğinde yüzey yok; kaynak nokta bulutu ve yol korundu':mode==='surface'?(isTsdf?'TSDF yüzeyi · yüzey araları hesaplanarak birleştirildi':'Yüzey görünümü · boş bölgeler doldurulmadı'):'Nokta görünümü · yüzeyi destekleyen noktalar';}
+function setMode(value){mode=value;document.getElementById('surface').setAttribute('aria-pressed',value==='surface');document.getElementById('points').setAttribute('aria-pressed',value==='points');draw();}
+document.getElementById('surface').onclick=()=>setMode('surface');document.getElementById('points').onclick=()=>setMode('points');
+if(!s.meshTriangles)document.getElementById('surface').disabled=true;
+document.getElementById('fit').onclick=()=>{target=center.slice();distance=radius*2.4;azimuth=-2.9;elevation=.58;draw();};
+document.getElementById('top').onclick=()=>{target=center.slice();distance=radius*2.2;elevation=Math.PI/2-.001;draw();};
+document.getElementById('path').onchange=e=>{showPath=e.target.checked;draw();};
+canvas.oncontextmenu=e=>e.preventDefault();canvas.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,pan:e.button===2};canvas.setPointerCapture(e.pointerId);};
+canvas.onpointerup=()=>drag=null;canvas.onpointercancel=()=>drag=null;canvas.onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+if(drag.pan){const right=[-Math.sin(azimuth),Math.cos(azimuth),0];target=add(target,add(mul(right,-dx*distance/innerHeight),[0,0,dy*distance/innerHeight]));}
+else{azimuth-=dx*.008;elevation=Math.max(-1.4,Math.min(1.5,elevation+dy*.008));}drag.x=e.clientX;drag.y=e.clientY;draw();};
+canvas.addEventListener('wheel',e=>{e.preventDefault();distance=Math.max(.1,Math.min(radius*20,distance*Math.exp(e.deltaY*.001)));draw();},{passive:false});window.addEventListener('resize',draw);setMode(mode);
+window.sceneViewer={rendered:true,meshVertices:s.meshVertices,meshTriangles:s.meshTriangles,poses:s.poses};
+</script></body></html>

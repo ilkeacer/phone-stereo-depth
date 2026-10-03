@@ -35,11 +35,14 @@ def main():
     parser.add_argument('--calibration',type=Path,required=True)
     add_scale_options(parser)
     parser.add_argument('--seconds',type=int,default=120)
+    parser.add_argument('--capture-iso',type=int,default=800,
+                        help='Fixed sensor gain for both cameras; keep focus, crop and 20 ms exposure unchanged')
     parser.add_argument('--report',type=Path,required=True)
     parser.add_argument('--diagnostic-dir',type=Path,help='Save bounded 30-second raw motion diagnostic')
     parser.add_argument('--recording-dir',type=Path,help='Preserve the complete admitted mapping stream for offline replay')
     args=parser.parse_args()
     if not 5<=args.seconds<=600:parser.error('--seconds must be 5..600')
+    if not 100<=args.capture_iso<=3200:parser.error('--capture-iso must be 100..3200')
     if args.report.exists():raise FileExistsError('Report already exists')
     if args.diagnostic_dir is not None and args.diagnostic_dir.exists():
         raise FileExistsError('Diagnostic directory already exists')
@@ -64,7 +67,7 @@ def main():
     args.report.parent.mkdir(parents=True,exist_ok=True)
     status_path=args.report.parent/'live-status.json'
     atomic_json(status_path,dict(stage='warming_up',updatedMonotonic=time.monotonic()))
-    stats=dict(scale,robotExtrinsicsAvailable=False,
+    stats=dict(scale,captureIsoRequested=args.capture_iso,robotExtrinsicsAvailable=False,
         timePolicy='ROS clock anchored to Android REALTIME snapshot once; exposure offsets preserved; host transport timing uncertainty remains')
     try:
         if args.recording_dir is not None:
@@ -83,7 +86,7 @@ def main():
         run_command([*adb_prefix,'forward','tcp:8765','tcp:8765'],stop)
         run_command([*adb_prefix,'shell','am','start','-n',f'{PACKAGE}/.MainActivity','--es','ids','20,21',
             '--ei','seconds',str(args.seconds+30),'--ei','width','1280','--ei','height','960',
-            '--ez','fixed','true','--ez','live','true','--ef','focus','1.4','--ei','iso','400',*timing_args(30)],stop)
+            '--ez','fixed','true','--ez','live','true','--ef','focus','1.4','--ei','iso',str(args.capture_iso),*timing_args(30)],stop)
         rclpy.init();node=rclpy.create_node('phone_stereo_live')
         publishers={f'/phone/{side}/{suffix}':node.create_publisher(kind,f'/phone/{side}/{suffix}',2)
             for side in ('left','right') for suffix,kind in [('image_rect',Image),('camera_info',CameraInfo)]}

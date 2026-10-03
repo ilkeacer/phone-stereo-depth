@@ -8,6 +8,6 @@ Excluded: all captured/rectified photos, desktop screenshots, video, disparity/d
 
 No code in the public archive transmits the private dataset. Reproducing the real-device measurements requires collecting one's own dataset; the synthetic unit tests run without the author's camera photos. The local dataset is retained separately and has not been deleted or uploaded.
 
-No project-wide open-source license has been selected yet. Public hosting and permission to reuse code are separate decisions. Choose a project license before advertising the repository as licensed open source. Third-party software/checkpoint terms remain separate; pretrained weights are not redistributed.
+The owner intends the final project to be fully open source, but has not selected a project-wide license yet. Public hosting and permission to reuse code are separate decisions. Choose a project license before advertising the repository as licensed open source. Direct Ultralytics code/model integration would require accounting for its AGPL-3.0 terms; a detector with permissive code and separately verified weight terms is another option. Third-party software/checkpoint terms remain separate; pretrained weights are not redistributed.
 
 The repository includes a working recorded/live ROS input and RTAB-Map export pipeline. It remains a research prototype: room accuracy, scale and robot-mounted navigation are unvalidated. See `EVALUATION.md` and `ROS_3D_MAPPING_TR.md` for evidence and acceptance boundaries. The GitHub workflow has been prepared; a remote Actions run has not been performed.

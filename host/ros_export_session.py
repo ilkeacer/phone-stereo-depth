@@ -31,7 +31,8 @@ def export(directory,diagnostic=False):
     summary=json.loads((directory/'summary.json').read_text())
     if (not summary['accumulatedGraphPresent'] or summary.get('processFailures')
             or not summary.get('shutdownClean',True) or summary.get('sessionError') or summary.get('captureError')
-            or (not diagnostic and (summary.get('hybridTrackingFailure') or summary.get('captureContinuedAfterTrackingLoss')))):
+            or (not diagnostic and (summary.get('hybridTrackingFailure') or summary.get('captureContinuedAfterTrackingLoss')
+                                    or summary.get('depthTrackingInvalid')))):
         return dict(status='skipped',reason='No intact accumulated graph or session failed')
     if diagnostic and not (directory/'hybrid-tracking-failure.json').exists():
         return dict(status='skipped',reason='Diagnostic fragment requires recorded tracking failure')
@@ -71,7 +72,8 @@ def export(directory,diagnostic=False):
                     exportedNodeIds=exported_ids,
                     pointBounds=dict(min=xyz.min(0).tolist(),max=xyz.max(0).tolist()),
                     pathLengthEstimatedM=float(np.linalg.norm(np.diff(poses[:,1:4],axis=0),axis=1).sum()),
-                    scaleSource=summary.get('scaleSource'),squareMm=summary.get('squareMm'),
+                    scaleSource=summary.get('scaleSource'),odometryScaleSource=summary.get('odometryScaleSource'),
+                    squareMm=summary.get('squareMm'),
                     scaleMeasurement=summary.get('scaleMeasurement'),metricAccuracyValidated=False,
                     sourceComponents=summary['graph'].get('connectedComponents'),
                     selectedComponentNodes=len(component) if component is not None else None,

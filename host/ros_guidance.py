@@ -26,6 +26,36 @@ STEPS = (
      'Kaydediliyor yazısından sonra telefonu indirebilirsin.'),
 )
 
+FLOOR_STEPS = (
+    (0, 5, 'ZEMİNİ GÖSTER · SABİT TUT',
+     'Telefonu dik tut. Arka kameraları yaklaşık 45° aşağı eğ: görüntünün çoğu zemin, üst kenarı masa/duvar/eşya olsun. '
+     'Bu ilk 5 saniye aynı yerde bekle.'),
+    (5, 35, 'ZEMİN ÜZERİNDE YANA İLERLE',
+     'Telefonun açısını ve yüksekliğini koruyarak 30 saniyede yaklaşık yarım metre yana ilerle. '
+     'Aynı zemin deseni ve eşya kenarları kadrajda kalsın; yalnız bileğini döndürme.'),
+    (35, 55, 'KÜÇÜK BİR İLERİ ADIM',
+     'Yaklaşık 20–40 cm yavaşça ileri git. Zemin yine görüntünün çoğunu kaplasın; '
+     'üst kısımda hareketsiz eşya kenarları görünmeye devam etsin.'),
+    (55, 85, 'AYNI YOLDAN GERİ DÖN',
+     'İleri adımı geri al, sonra yana geldiğin yolu tersine izle. 180° dönme. '
+     'Telefonun yüksekliği ve aşağı bakış açısı yaklaşık aynı kalsın.'),
+    (85, 90, 'SON 5 SANİYE SABİT TUT',
+     'Başlangıç bölgesinde telefonu sabit tut; kayıt otomatik durana kadar bekle.'),
+)
+
+FLOOR_PREPARATION = (
+    'Telefonun kilidini aç ve ADB bağlantısını hazırla. Kamerayı bilgisayardaki düğme açacak; şimdi kayıt başlamaz.',
+    'Işıkları aç. Mat, desenli veya derzleri görünen bir zemin seç; parlak/tek renk yüzeyde takip zorlaşabilir. '
+    'Yeni dama hedefi veya ölçü aleti gerekmez.',
+    'Telefonu DİK, iki elle, yaklaşık bel-göğüs yüksekliğinde tut. Kamerayı yaklaşık 45° aşağı eğ. '
+    'Zemin görüntünün çoğunu kaplasın ama üst kenarda sabit masa/duvar/eşya çizgileri de görünsün. '
+    'Ekrandaki görüntü yatay görünürse telefonu çevirmeden panelde “Dik göster” seç.',
+    'Kısa ve güvenli bir yol seç: önce yana yaklaşık yarım metre, sonra küçük bir ileri adım, ardından aynı yoldan geri. '
+    'Bu mesafeleri ölçmen veya robottaki kadar hassas hareket etmen gerekmez.',
+    'İlk 5 saniye sabit, sonra yavaş hareket. Takip kaybolursa ani hareket yapma; kayıt sürerken yeniden başlatma. '
+    'Süre sonunda harita otomatik kaydedilir. Modelin tahmini derinliği gerçek mesafe doğruluğu sayılmaz.',
+)
+
 # A complete-room observation is deliberately a separate capture. It does not
 # imply that every camera pose can be joined into one verified map.
 ROOM_STEPS = (
@@ -82,7 +112,7 @@ IDLE_TEXT = ('ŞİMDİ GEREKEN: kısa oda rotası veya 3 dakikalık tüm oda tur
              'Bu kısa rota odanın görünen bölümünü kaydeder; tam oda kapsamı garanti değildir.')
 
 
-def mapping_guidance(status, now, tracking_failed=False, capture_continues=False, duration_seconds=TEST_SECONDS):
+def mapping_guidance(status, now, tracking_failed=False, capture_continues=False, duration_seconds=TEST_SECONDS,floor_mode=False):
     if status and status.get('error'):
         return ('DUR · OTURUM HATASI', 'Test duruyor',
                 'Hareketi durdur. Kayıt başarıyla tamamlanmadı. Hata: '+str(status['error']))
@@ -145,7 +175,7 @@ def mapping_guidance(status, now, tracking_failed=False, capture_continues=False
                 'Kısa yolda yavaş ilerle ve başlangıç yönüne dön. Bu süre 90 saniyelik aşamalı rehbere ait değil.')
     if elapsed >= TEST_SECONDS:
         return ('HAREKETİ BİTİR', '0 sn kaldı', 'Kayıt sonlandırılıyor; başlangıç yerinde bekle.')
-    for index, (start, end, title, detail) in enumerate(STEPS):
+    for index, (start, end, title, detail) in enumerate(FLOOR_STEPS if floor_mode else STEPS):
         if elapsed < end:
             return (f'{index+1}/5 · {title}', f'{math.ceil(end-elapsed)} sn bu adım',
                     f'Toplam {remaining} sn kaldı · Kayıt: {status.get("publishedPairs", 0)} stereo çift\n\n'+detail)

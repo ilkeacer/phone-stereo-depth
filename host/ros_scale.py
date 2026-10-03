@@ -79,6 +79,8 @@ def scale_from_args(args):
 
 
 def scale_label(scale):
+    if scale.get('scaleSource') == 'arcore_depth_api':
+        return 'ARCore derinliği metre biriminde · Fiziksel doğruluk henüz doğrulanmadı'
     if scale.get('scaleSource') == 'measured':
         approximate = (scale.get('scaleMeasurement') or {}).get('approximate', False)
         return f"Kare kenarı: {'yaklaşık ' if approximate else ''}{scale['squareMm']:g} mm · Fiziksel ölçüm · Harita doğruluğu henüz doğrulanmadı"
@@ -90,6 +92,8 @@ def saved_map_scale(cloud):
     path = Path(cloud).parent/'result.json'
     if path.is_file():
         result = json.loads(path.read_text())
+        if result.get('scaleSource') == 'arcore_depth_api' and result.get('metricAccuracyValidated') is False:
+            return result
         if result.get('scaleSource') == 'measured' and result.get('squareMm') is not None:
             return result
     return dict(scaleSource='unknown')

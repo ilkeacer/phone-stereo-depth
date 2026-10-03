@@ -5,10 +5,12 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE_DIRS=('android','host','scripts','tests','configs','.github')
 DOCS=('README.md','.gitignore','docs/EVALUATION.md','docs/DEPTH_ANYTHING.md','docs/DEPTH_CONSISTENCY.md','docs/ONLINE_SGBM.md','docs/RGBD_MAPPING.md','docs/BENCHMARK_RESULTS.md','docs/ROS_3D_MAPPING_TR.md','docs/DESKTOP_ASSISTANT.md','docs/REPRODUCE.md',
-      'docs/RESULTS_TR.md','docs/ROS_SLAM.md','docs/PUBLICATION.md','docs/ROS_WIFI_TR.md','docs/LIVE_3D_STATUS_TR.md','docs/ROS_RECOVERY_SEGMENTS_TR.md',
+      'docs/RESULTS_TR.md','docs/ROS_SLAM.md','docs/PUBLICATION.md','docs/ROS_WIFI_TR.md','docs/LIVE_3D_STATUS_TR.md','docs/ROS_RECOVERY_SEGMENTS_TR.md','docs/YOLO_KAMERA_KARARI_TR.md',
+      'docs/ARCORE_AI_KAYITLI_DENEME_TR.md','docs/ARCORE_HARITA_KALITESI_YOL_HARITASI_TR.md','docs/ARCORE_ODA_CIKTISI_TR.md','docs/ARCORE_UCRETSIZ_GPU_TR.md','docs/ARCORE_AI_CANLI_TR.md',
       'docs/evidence/public-measurements.json','docs/evidence/stereo-benchmark.json','docs/evidence/depth-anything-benchmark.json','docs/evidence/model-provenance.json',
       'docs/evidence/raft-weights.sha256')
 TEXT_SUFFIXES={'.py','.kt','.gradle','.properties','.xml','.md','.json','.sh','.txt','.sha256','.yml','.yaml','.rviz'}
+HTML_TEMPLATE='host/arcore_scene_viewer.html'
 EXCLUDE_PARTS={'build','.gradle','__pycache__','data','work','.git','.venv','outputs'}
 EXCLUDE_FILES={'local.properties','export_evidence.py'}
 
@@ -22,8 +24,10 @@ def public_files(root=ROOT):
         if any(part in EXCLUDE_PARTS for part in relative.parts) or path.name in EXCLUDE_FILES:continue
         if path.is_symlink():raise ValueError(f'Symlink excluded: {relative}')
         if not path.is_file():continue
-        if path.suffix not in TEXT_SUFFIXES and path.name!='.gitignore':continue
+        if path.suffix not in TEXT_SUFFIXES and path.name!='.gitignore' and relative.as_posix()!=HTML_TEMPLATE:continue
         text=path.read_text(encoding='utf-8')
+        if relative.as_posix()==HTML_TEMPLATE and (text.count('__SCENE_PAYLOAD__')!=1 or re.search(r'"glb"\s*:\s*"',text)):
+            raise ValueError(f'Embedded private scene in source template: {relative}')
         if '\x00' in text:raise ValueError(f'Non-text payload: {relative}')
         if re.search(r'/home/[A-Za-z0-9_.-]+|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|data:image/[^;]+;base64,',text):
             raise ValueError(f'Private path or embedded payload requires review: {relative}')

@@ -32,7 +32,7 @@ class DashboardGuideTests(unittest.TestCase):
 
     def test_guide_open_close_does_not_start_and_controls_fit_minimum_size(self):
         d=self.dashboard
-        d.buttons[0].invoke();self.root.update()
+        d.buttons[1].invoke();self.root.update()
         guide=d.guide_dialog;guide.geometry('820x720');self.root.update()
         for w in self.descendants(guide):
             if isinstance(w,self.tk.Button):
@@ -47,7 +47,7 @@ class DashboardGuideTests(unittest.TestCase):
     def test_full_room_button_has_distinct_guide_and_180_second_capture(self):
         from host.ros_guidance import ROOM_SECONDS
         d=self.dashboard
-        d.buttons[1].invoke();self.root.update()
+        d.buttons[2].invoke();self.root.update()
         self.assertIn('3 dakikalık',d.guide_dialog.title())
         start=next(w for w in self.descendants(d.guide_dialog)
                    if isinstance(w,self.tk.Button) and w.cget('text').startswith('Hazırım'))
@@ -62,6 +62,21 @@ class DashboardGuideTests(unittest.TestCase):
         self.assertIn('5–145',d.route.cget('text'))
         d.process=None
         self.popen.reset_mock()
+
+    def test_ai_floor_button_explains_view_and_sets_provisional_policy(self):
+        d=self.dashboard
+        d.buttons[0].invoke();self.root.update()
+        self.assertEqual(d.guide_engine,'ai')
+        text=' '.join(w.get('1.0','end') for w in self.descendants(d.guide_dialog) if isinstance(w,self.tk.Text))
+        self.assertIn('zemin',text.lower())
+        start=next(w for w in self.descendants(d.guide_dialog)
+                   if isinstance(w,self.tk.Button) and w.cget('text').startswith('Hazırım'))
+        with patch.object(d,'start') as launch:
+            start.invoke();launch.assert_called_once_with(False,depth_engine='ai')
+        self.popen.return_value.stdout=[]
+        d.start(False,depth_engine='ai')
+        self.assertEqual(self.popen.call_args.kwargs['env']['PHONE_TRACKING_LOSS_POLICY'],'continue-provisional')
+        d.process=None;self.popen.reset_mock()
 
     def test_all_movement_stages_fit_with_long_health_status(self):
         from host.ros_guidance import mapping_guidance,STEPS,ROOM_STEPS,ROOM_SECONDS
@@ -91,19 +106,20 @@ class DashboardGuideTests(unittest.TestCase):
             d.process=None
 
     def test_camera_preview_does_not_start_mapper_or_record_raw_images(self):
-        import shutil
         d=self.dashboard
-        d.start_preview()
+        with tempfile.TemporaryDirectory() as project:
+            with patch('host.ros_dashboard.PROJECT',Path(project)):
+                d.start_preview()
+            self.assertEqual(d.directory.parent,Path(project)/'work')
+            self.assertTrue(d.directory.is_dir())
         command=self.popen.call_args.args[0]
         self.assertIn('host.ros_live',command)
         self.assertNotIn('host.ros_session',command)
         self.assertNotIn('--recording-dir',command)
         self.assertEqual(d.mode,'preview')
         self.assertEqual(d.stop_button.cget('text'),'Önizlemeyi durdur')
-        preview_dir=d.directory
         d.process=None
         self.popen.reset_mock()
-        shutil.rmtree(preview_dir)
 
     def test_preview_shows_received_dark_frame_without_blocking(self):
         d=self.dashboard

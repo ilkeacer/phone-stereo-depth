@@ -32,6 +32,11 @@ outputs/
 *.npz
 *.ply
 *.pcd
+*.glb
+*.gltf
+*.obj
+*.mtl
+*.stl
 *.bag
 *.mcap
 *.db3

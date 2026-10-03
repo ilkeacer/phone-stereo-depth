@@ -17,7 +17,7 @@ class ExportTests(unittest.TestCase):
                     self.assertEqual(export(root)['status'],'skipped');run.assert_not_called()
 
     def test_failed_capture_is_not_exported_as_a_map(self):
-        for field in ('sessionError','captureError','hybridTrackingFailure','captureContinuedAfterTrackingLoss'):
+        for field in ('sessionError','captureError','hybridTrackingFailure','captureContinuedAfterTrackingLoss','depthTrackingInvalid'):
             with self.subTest(field=field),tempfile.TemporaryDirectory() as tmp:
                 root=Path(tmp);(root/'summary.json').write_text(json.dumps(dict(accumulatedGraphPresent=True,**{field:'failure'})))
                 with patch('host.ros_export_session.subprocess.run') as run:

@@ -1,106 +1,239 @@
 Panels:
   - Class: rviz_common/Displays
+    Help Height: 70
     Name: Displays
+    Property Tree Widget:
+      Expanded: ~
+      Splitter Ratio: 0.5
+    Tree Height: 579
 Visualization Manager:
   Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 90; 100; 115
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Zemin
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Canli 3B harita
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtabmap/cloud_map
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Kayitli 3B harita
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /phone/saved_map
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 255; 220; 40
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.03999999910593033
+      Name: Canli kamera yolu
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtabmap/mapPath
+      Value: true
+    - Class: rviz_default_plugins/Axes
+      Enabled: true
+      Length: 0.25
+      Name: Telefonun odometri tahmini (eski haritada onaysiz olabilir)
+      Radius: 0.014999999664723873
+      Reference Frame: phone_link
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 220; 50; 220
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.03999999910593033
+      Name: Eski harita eslesmesinden sonraki yol
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /phone/localization_path
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 255; 153; 40
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.019999999552965164
+      Name: Kayitli kamera yolu
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /phone/saved_path
+      Value: true
+    - Class: rviz_default_plugins/Axes
+      Enabled: true
+      Length: 0.30000001192092896
+      Name: Kayit bitisindeki telefon pozu
+      Radius: 0.017999999225139618
+      Reference Frame: saved_phone_last
+      Value: true
+  Enabled: true
   Global Options:
     Background Color: 235; 239; 243
     Fixed Frame: map
     Frame Rate: 30
-  Displays:
-    - Class: rviz_default_plugins/Grid
-      Name: Zemin
-      Enabled: true
-      Cell Size: 1
-      Plane Cell Count: 20
-      Color: 90; 100; 115
-    - Class: rviz_default_plugins/PointCloud2
-      Name: Canli 3B harita
-      Enabled: true
-      Topic:
-        Value: /rtabmap/cloud_map
-        Reliability Policy: Reliable
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Depth: 1
-      Style: Points
-      Size (Pixels): 3
-      Color Transformer: RGB8
-      Position Transformer: XYZ
-    - Class: rviz_default_plugins/PointCloud2
-      Name: Kayitli 3B harita
-      Enabled: true
-      Topic:
-        Value: /phone/saved_map
-        Reliability Policy: Reliable
-        Durability Policy: Transient Local
-        History Policy: Keep Last
-        Depth: 1
-      Style: Points
-      Size (Pixels): 3
-      Color Transformer: RGB8
-      Position Transformer: XYZ
-    - Class: rviz_default_plugins/Path
-      Name: Canli kamera yolu
-      Enabled: true
-      Topic:
-        Value: /rtabmap/mapPath
-        Reliability Policy: Reliable
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Depth: 1
-      Color: 255; 220; 40
-      Line Style: Lines
-      Line Width: 0.04
-      Pose Style: None
-    - Class: rviz_default_plugins/Axes
-      Name: Telefonun odometri tahmini (eski haritada onaysiz olabilir)
-      Enabled: true
-      Reference Frame: phone_link
-      Length: 0.25
-      Radius: 0.015
-    - Class: rviz_default_plugins/Path
-      Name: Eski harita eslesmesinden sonraki yol
-      Enabled: true
-      Topic:
-        Value: /phone/localization_path
-        Reliability Policy: Reliable
-        Durability Policy: Transient Local
-        History Policy: Keep Last
-        Depth: 1
-      Color: 220; 50; 220
-      Line Style: Lines
-      Line Width: 0.04
-      Pose Style: None
-    - Class: rviz_default_plugins/Path
-      Name: Kayitli kamera yolu
-      Enabled: true
-      Topic:
-        Value: /phone/saved_path
-        Reliability Policy: Reliable
-        Durability Policy: Transient Local
-        History Policy: Keep Last
-        Depth: 1
-      Color: 255; 153; 40
-      Line Style: Lines
-      Line Width: 0.02
-      Pose Style: None
-    - Class: rviz_default_plugins/Axes
-      Name: Kayit bitisindeki telefon pozu
-      Enabled: true
-      Reference Frame: saved_phone_last
-      Length: 0.3
-      Radius: 0.018
+  Name: root
+  Tools: ~
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
       Distance: 4
-      Pitch: 0.6
-      Yaw: 3.9
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
       Focal Point:
         X: 1
         Y: 0
         Z: 0
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.6000000238418579
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 3.9000000953674316
+    Saved: ~
 Window Geometry:
-  Width: 1200
+  Displays:
+    collapsed: false
   Height: 800
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000010000000000000156000002c6fc0200000001fb000000100044006900730070006c006100790073010000003d000002c6000000c900ffffff00000354000002c600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Width: 1200
+  X: 165
+  Y: 122
